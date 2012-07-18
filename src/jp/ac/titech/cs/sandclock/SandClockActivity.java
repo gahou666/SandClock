@@ -17,19 +17,33 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-<<<<<<< HEAD
-=======
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
->>>>>>> gravitysensor
 import android.widget.LinearLayout;
 
 public class SandClockActivity extends Activity implements SensorEventListener{
+	static class Point{
+		int x;
+		int y;
+		Point(int x, int y){
+			this.x = x;
+			this.y = y;
+		}
+	}
     /** Called when the activity is first created. */
-<<<<<<< HEAD
-    @Override
+	private final String TAG = this.getClass().getSimpleName();
+	int tt = 0;
+	private SensorManager mSensorManager;
+	private Screen mTextView;
+	double gravx, gravy;
+	Point CLOCKBASE = new Point(3,23);
+	Point CLOCKEND = new Point(577,895);
+	int EXIT_WIDTH = 3;
+	Point CLOCKCENTER = new Point((CLOCKBASE.x+CLOCKEND.x)/2,(CLOCKBASE.y+CLOCKEND.y)/2);
+
+	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         LinearLayout l = new LinearLayout(this);
@@ -42,22 +56,12 @@ public class SandClockActivity extends Activity implements SensorEventListener{
         
         setContentView(new ImageResizeView(this, R.drawable.t1));
         */
-=======
-	private final String TAG = this.getClass().getSimpleName();
-	int tt = 0;
-	private SensorManager mSensorManager;
-	private Screen mTextView;
-	double grav;
-    
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
 		FrameLayout fl = new FrameLayout(this);
 		setContentView(fl);
         fl.addView(new Screen(this));
         
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-    }
+	}
     
     @Override
     protected void onResume(){
@@ -78,9 +82,12 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     @Override
     public void onSensorChanged(SensorEvent event){
     	if(event.sensor.getType() == Sensor.TYPE_GRAVITY){
-    		grav = (double)(event.values[0]);
+    		gravx = (double)(event.values[0]);
+    		gravy = (double)(event.values[1]);
     		
-    		Log.i(TAG, String.valueOf(grav));
+    		Log.i(TAG, "x"+String.valueOf(gravx));
+    		Log.i(TAG, "y"+String.valueOf(gravy));
+    		
     	}
     }
     
@@ -103,20 +110,20 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		Resources res = getResources();
     		Configuration cfg = res.getConfiguration();
     		if(cfg.orientation == Configuration.ORIENTATION_PORTRAIT){
-    			if(grav<0) tt++;
+    			if(gravx<0) tt++;
     			else tt--;
     		}
     		
     		p.setStrokeWidth(3);
     		Path path = new Path();
     		path.reset();
-    		path.moveTo(287, 459);
-    		path.lineTo(3, 23);
-    		path.lineTo(577, 23);
-    		path.lineTo(293, 459);
-    		path.lineTo(577, 895);
-    		path.lineTo(3, 895);
-    		path.lineTo(287, 459);
+    		path.moveTo(CLOCKBASE.x, CLOCKBASE.y);
+    		path.lineTo(CLOCKEND.x, CLOCKBASE.y);
+    		path.lineTo(CLOCKCENTER.x+EXIT_WIDTH, CLOCKCENTER.y);
+    		path.lineTo(CLOCKEND.x, CLOCKEND.y);
+    		path.lineTo(CLOCKBASE.x, CLOCKEND.y);
+    		path.lineTo(CLOCKCENTER.x-EXIT_WIDTH, CLOCKCENTER.y);
+    		path.lineTo(CLOCKBASE.x, CLOCKBASE.y);
     		c.drawPath(path, p);
     		
     		//draw sand
@@ -155,6 +162,5 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		
     		//How do i get the current orientation - stack overflow
     	}
->>>>>>> gravitysensor
     }
 }
