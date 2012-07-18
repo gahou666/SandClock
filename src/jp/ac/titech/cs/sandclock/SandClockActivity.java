@@ -34,7 +34,6 @@ public class SandClockActivity extends Activity implements SensorEventListener{
 	}
     /** Called when the activity is first created. */
 	private final String TAG = this.getClass().getSimpleName();
-	int tt = 0;
 	private SensorManager mSensorManager;
 	private Screen mTextView;
 	double gravx, gravy;
@@ -85,14 +84,14 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		gravx = (double)(event.values[0]);
     		gravy = (double)(event.values[1]);
     		
-    		Log.i(TAG, "x"+String.valueOf(gravx));
-    		Log.i(TAG, "y"+String.valueOf(gravy));
+    		//Log.i(TAG, "x"+String.valueOf(gravx));
+    		//Log.i(TAG, "y"+String.valueOf(gravy));
     		
     	}
     }
     
     public class Screen extends View {
-    	int tt=0;
+    	double tt=0;
     	public Screen(Context context){
     		super(context);
     	}
@@ -110,8 +109,8 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		Resources res = getResources();
     		Configuration cfg = res.getConfiguration();
     		if(cfg.orientation == Configuration.ORIENTATION_PORTRAIT){
-    			if(gravx<0) tt++;
-    			else tt--;
+    			if(gravx<0) tt+=1.0;
+    			else tt-=1.0;
     		}
     		
     		p.setStrokeWidth(3);
@@ -129,30 +128,77 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		//draw sand
     		p.setColor(Color.YELLOW);
     		p.setStyle(Paint.Style.FILL_AND_STROKE);
-    		float maxt = 120;
-    		float t = maxt-tt;
-    		float rate = (float)Math.sqrt(t/maxt);
-    		if(tt>120) rate = 0;
-
-    		path.reset();
-    		PointF base1 = new PointF(287,459);
-    		path.moveTo(base1.x, base1.y);
-    		path.lineTo(base1.x-284*rate*(float)0.6, base1.y-436*rate*(float)0.6);
-    		path.lineTo(base1.x+6+284*rate*(float)0.6, base1.y-436*rate*(float)0.6);
-    		path.lineTo(base1.x+6, base1.y);
-    		c.drawPath(path,p);
+    		double maxt = 120;
     		
+    		if(tt<0) tt=0;
+    		if(tt>maxt) tt=maxt;
+    		
+    		float rate = (float)(Math.sqrt(1-(float)(tt/maxt))*0.7);
+    		float drate = (float)((1-Math.sqrt(1-(float)(tt/maxt)))*0.3);
+    		float rate2 = (float)(Math.sqrt(1-(float)((maxt-tt)/maxt))*0.7);
+    		float drate2 = (float)((1-Math.sqrt(1-(float)((maxt-tt)/maxt)))*0.3);
+    		Point BIAS = new Point(CLOCKEND.x-CLOCKCENTER.x-EXIT_WIDTH, CLOCKBASE.y-CLOCKCENTER.y);
+    		Log.i(TAG, "t    : "+String.valueOf(tt));
+    		Log.i(TAG, "maxt : "+String.valueOf(maxt));
+    		Log.i(TAG, "rate : "+String.valueOf(rate));
+    		if(gravx<0){
+        		if(maxt>tt){
+            		//draw upper sand
+            		path.reset();
+            		path.moveTo(CLOCKCENTER.x+EXIT_WIDTH, CLOCKCENTER.y);
+            		path.lineTo(CLOCKCENTER.x+EXIT_WIDTH+BIAS.x*rate, CLOCKCENTER.y+BIAS.y*rate);
+            		path.lineTo(CLOCKCENTER.x-EXIT_WIDTH-BIAS.x*rate, CLOCKCENTER.y+BIAS.y*rate);
+            		path.lineTo(CLOCKCENTER.x-EXIT_WIDTH, CLOCKCENTER.y);
+            		c.drawPath(path,p);
+            		
+            		//draw lower sand
+            		path.reset();
+            		path.moveTo(CLOCKBASE.x, CLOCKEND.y);
+            		path.lineTo(CLOCKBASE.x+BIAS.x*drate, CLOCKEND.y+BIAS.y*drate);
+            		path.lineTo(CLOCKEND.x-BIAS.x*drate, CLOCKEND.y+BIAS.y*drate);
+            		path.lineTo(CLOCKEND.x, CLOCKEND.y);
+            		c.drawPath(path,p);
+        		}else{
+        			//draw lower sand only
+            		path.reset();
+            		path.moveTo(CLOCKBASE.x, CLOCKEND.y);
+            		path.lineTo((float)(CLOCKBASE.x+BIAS.x*0.3), (float)(CLOCKEND.y+BIAS.y*0.3));
+            		path.lineTo((float)(CLOCKEND.x-BIAS.x*0.3), (float)(CLOCKEND.y+BIAS.y*0.3));
+            		path.lineTo(CLOCKEND.x, CLOCKEND.y);
+            		c.drawPath(path,p);    			
+        		}
+    		}else{
+        		if(0<tt){
+            		//draw upper sand
+            		path.reset();
+            		path.moveTo(CLOCKCENTER.x+EXIT_WIDTH, CLOCKCENTER.y);
+            		path.lineTo(CLOCKCENTER.x+EXIT_WIDTH-BIAS.x*rate2, CLOCKCENTER.y-BIAS.y*rate2);
+            		path.lineTo(CLOCKCENTER.x-EXIT_WIDTH+BIAS.x*rate2, CLOCKCENTER.y-BIAS.y*rate2);
+            		path.lineTo(CLOCKCENTER.x-EXIT_WIDTH, CLOCKCENTER.y);
+            		c.drawPath(path,p);
+            		
+            		//draw lower sand
+            		path.reset();
+            		path.moveTo(CLOCKEND.x, CLOCKBASE.y);
+            		path.lineTo(CLOCKEND.x-BIAS.x*drate2, CLOCKBASE.y-BIAS.y*drate2);
+            		path.lineTo(CLOCKBASE.x+BIAS.x*drate2, CLOCKBASE.y-BIAS.y*drate2);
+            		path.lineTo(CLOCKBASE.x, CLOCKBASE.y);
+            		c.drawPath(path,p);
+        		}else{
+        			//draw lower sand only
+            		path.reset();
+            		path.moveTo(CLOCKEND.x, CLOCKBASE.y);
+            		path.lineTo((float)(CLOCKEND.x-BIAS.x*0.3), (float)(CLOCKBASE.y-BIAS.y*0.3));
+            		path.lineTo((float)(CLOCKBASE.x+BIAS.x*0.3), (float)(CLOCKBASE.y-BIAS.y*0.3));
+            		path.lineTo(CLOCKBASE.x, CLOCKBASE.y);
+            		c.drawPath(path,p);    			
+        		}
+    		}
     		path.reset();
-    		PointF base2 = new PointF(3,895);
-    		path.moveTo(base2.x, base2.y);
-    		path.lineTo(base2.x+284*(1-rate)*(float)0.6, base2.y-436*(1-rate)*(float)0.6);
-    		path.lineTo(base2.x+574-284*(1-rate)*(float)0.6, base2.y-436*(1-rate)*(float)0.6);
-    		path.lineTo(base2.x+574, base2.y);
-    		c.drawPath(path,p);
 
     		//Timer
     		try {
-    			TimeUnit.SECONDS.sleep(1);
+    			TimeUnit.MILLISECONDS.sleep(100);
     		} catch (InterruptedException e) {
     			// TODO Auto-generated catch block
     			e.printStackTrace();
