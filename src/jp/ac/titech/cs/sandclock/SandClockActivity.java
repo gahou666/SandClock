@@ -151,8 +151,14 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		//portrait
     		if(gravx<0){
         		if(maxt>tt){
+        			//draw falling sand
+        			p.setStrokeWidth(EXIT_WIDTH);
+        			path.moveTo(CLOCKCENTER.x, CLOCKCENTER.y);
+        			path.lineTo(CLOCKCENTER.x, CLOCKEND.y);
+        			c.drawPath(path,p);
+        			path.reset();
             		//draw upper sand
-            		path.reset();
+        			p.setStrokeWidth(1);
             		path.moveTo(CLOCKCENTER.x+EXIT_WIDTH, CLOCKCENTER.y);
             		path.lineTo(CLOCKCENTER.x+EXIT_WIDTH+BIAS.x*rate, CLOCKCENTER.y+BIAS.y*rate);
             		path.lineTo(CLOCKCENTER.x-EXIT_WIDTH-BIAS.x*rate, CLOCKCENTER.y+BIAS.y*rate);
@@ -171,8 +177,8 @@ public class SandClockActivity extends Activity implements SensorEventListener{
         			//draw lower sand only
             		path.reset();
             		path.moveTo(CLOCKBASE.x, CLOCKEND.y);
-            		path.lineTo((float)(CLOCKBASE.x+BIAS.x*0.3), (float)(CLOCKEND.y+BIAS.y*0.3));
-            		path.lineTo((float)(CLOCKEND.x-BIAS.x*0.3), (float)(CLOCKEND.y+BIAS.y*0.3));
+            		path.lineTo((float)(CLOCKBASE.x+BIAS.x*Lamount), (float)(CLOCKEND.y+BIAS.y*Lamount));
+            		path.lineTo((float)(CLOCKEND.x-BIAS.x*Lamount), (float)(CLOCKEND.y+BIAS.y*Lamount));
             		path.lineTo(CLOCKEND.x, CLOCKEND.y);
             		c.drawPath(path,p);    			
             		path.reset();
@@ -180,8 +186,14 @@ public class SandClockActivity extends Activity implements SensorEventListener{
         		//portrait_reverse
     		}else{
         		if(0<tt){
+        			//draw falling sand
+        			p.setStrokeWidth(EXIT_WIDTH);
+        			path.moveTo(CLOCKCENTER.x, CLOCKCENTER.y);
+        			path.lineTo(CLOCKCENTER.x, CLOCKBASE.y);
+        			c.drawPath(path,p);
+        			path.reset();
             		//draw upper sand
-            		path.reset();
+        			p.setStrokeWidth(1);
             		path.moveTo(CLOCKCENTER.x+EXIT_WIDTH, CLOCKCENTER.y);
             		path.lineTo(CLOCKCENTER.x+EXIT_WIDTH-BIAS.x*rate2, CLOCKCENTER.y-BIAS.y*rate2);
             		path.lineTo(CLOCKCENTER.x-EXIT_WIDTH+BIAS.x*rate2, CLOCKCENTER.y-BIAS.y*rate2);
@@ -200,8 +212,8 @@ public class SandClockActivity extends Activity implements SensorEventListener{
         			//draw lower sand only
             		path.reset();
             		path.moveTo(CLOCKEND.x, CLOCKBASE.y);
-            		path.lineTo((float)(CLOCKEND.x-BIAS.x*0.3), (float)(CLOCKBASE.y-BIAS.y*0.3));
-            		path.lineTo((float)(CLOCKBASE.x+BIAS.x*0.3), (float)(CLOCKBASE.y-BIAS.y*0.3));
+            		path.lineTo((float)(CLOCKEND.x-BIAS.x*Lamount), (float)(CLOCKBASE.y-BIAS.y*Lamount));
+            		path.lineTo((float)(CLOCKBASE.x+BIAS.x*Lamount), (float)(CLOCKBASE.y-BIAS.y*Lamount));
             		path.lineTo(CLOCKBASE.x, CLOCKBASE.y);
             		c.drawPath(path,p);    			
             		path.reset();
