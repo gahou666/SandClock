@@ -30,15 +30,19 @@ public class SandClockActivity extends Activity implements SensorEventListener{
 			this.y = y;
 		}
 	}
-    /** Called when the activity is first created. */
+	
 	private final String TAG = this.getClass().getSimpleName();
 	private SensorManager mSensorManager;
 	double gravx, gravy;
-	Point CLOCKBASE = new Point(3,23);
-	Point CLOCKEND = new Point(577,895);
-	int EXIT_WIDTH = 3;
-	Point CLOCKCENTER = new Point((CLOCKBASE.x+CLOCKEND.x)/2,(CLOCKBASE.y+CLOCKEND.y)/2);
+	//might be able to get from hardware information...
+	final Point CLOCKBASE = new Point(3,23);
+	final Point CLOCKEND = new Point(577,895);
+	final int EXIT_WIDTH = 3;
+	//calculate from settings above
+	final Point CLOCKCENTER = new Point((CLOCKBASE.x+CLOCKEND.x)/2,(CLOCKBASE.y+CLOCKEND.y)/2);
+	final Point BIAS = new Point(CLOCKEND.x-CLOCKCENTER.x-EXIT_WIDTH, CLOCKBASE.y-CLOCKCENTER.y);
 	final double GRAVITY = 9.80619920;
+	
 	//default is 3 minutes
 	double tt = 0;
 	double maxt = 9000;	//50 per second , 3000 per minute
@@ -51,21 +55,15 @@ public class SandClockActivity extends Activity implements SensorEventListener{
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        LinearLayout l = new LinearLayout(this);
-        l.setOrientation(LinearLayout.VERTICAL);
-        setContentView(l);
-        l.addView(new Screen(this));
 		FrameLayout fl = new FrameLayout(this);
 		setContentView(fl);
         fl.addView(new Screen(this));
-        
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 	}
     
     @Override
     protected void onResume(){
     	super.onResume();
-    	
     	List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_GRAVITY);
     	if(sensors.size()>0){
     		Sensor s = sensors.get(0);
@@ -74,19 +72,13 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     }
     
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy){
-    	
-    }
+    public void onAccuracyChanged(Sensor sensor, int accuracy){}
     
     @Override
     public void onSensorChanged(SensorEvent event){
     	if(event.sensor.getType() == Sensor.TYPE_GRAVITY){
     		gravx = (double)(event.values[0]);
     		gravy = (double)(event.values[1]);
-    		
-    		Log.i(TAG, "x"+String.valueOf(gravx));
-    		Log.i(TAG, "y"+String.valueOf(gravy));
-    		
     	}
     }
     
@@ -99,12 +91,21 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     	protected void onDraw(Canvas c){
     		super.onDraw(c);
     		Paint p = new Paint();
+    		
+    		//count time
+    		if(gravx<-BORDERg || gravx>BORDERg)	tt-=(gravx/GRAVITY);
+    		if(tt<0) tt=0;
+    		if(tt>maxt) tt=maxt;
+    		
+    		//calculate some parameters
+    		float rate = (float)(Math.sqrt(1-(float)(tt/maxt))*Uamount);
+    		float drate = (float)((1-Math.sqrt(1-(float)(tt/maxt)))*Lamount);
+    		float rate2 = (float)(Math.sqrt(1-(float)((maxt-tt)/maxt))*Uamount);
+    		float drate2 = (float)((1-Math.sqrt(1-(float)((maxt-tt)/maxt)))*Lamount);
+    		
     		//draw glass
     		p.setARGB(255, 255, 255, 255);
     		p.setStyle(Paint.Style.STROKE);
-    		c.drawText("testString"+String.valueOf(fallsand), CLOCKCENTER.x+50, CLOCKCENTER.y, p);
-    		if(gravx<-BORDERg || gravx>BORDERg)	tt-=(gravx/GRAVITY);
-    		
     		p.setStrokeWidth(3);
     		Path path = new Path();
     		path.reset();
@@ -122,15 +123,7 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		p.setStrokeWidth(1);
     		p.setColor(Color.YELLOW);
     		p.setStyle(Paint.Style.FILL_AND_STROKE);
-    		
-    		if(tt<0) tt=0;
-    		if(tt>maxt) tt=maxt;
-    		
-    		float rate = (float)(Math.sqrt(1-(float)(tt/maxt))*Uamount);
-    		float drate = (float)((1-Math.sqrt(1-(float)(tt/maxt)))*Lamount);
-    		float rate2 = (float)(Math.sqrt(1-(float)((maxt-tt)/maxt))*Uamount);
-    		float drate2 = (float)((1-Math.sqrt(1-(float)((maxt-tt)/maxt)))*Lamount);
-    		Point BIAS = new Point(CLOCKEND.x-CLOCKCENTER.x-EXIT_WIDTH, CLOCKBASE.y-CLOCKCENTER.y);
+
     		//portrait
     		if(gravx<-BORDERg){
         		if(maxt>tt){
@@ -162,7 +155,7 @@ public class SandClockActivity extends Activity implements SensorEventListener{
             		c.drawPath(path,p);    			
             		path.reset();
         		}
-        		//portrait_reverse
+        	//portrait_reverse
     		}else if(gravx>BORDERg){
         		if(0<tt){
         			fallsand = -2;
@@ -191,11 +184,11 @@ public class SandClockActivity extends Activity implements SensorEventListener{
             		c.drawPath(path,p);    			
             		path.reset();
         		}
-        		//landscape or landscape_reverse
+        	//landscape or landscape_reverse
     		}else{
+    			fallsand = 0;
     			//landscape
     			if(gravy<0){
-    				fallsand = 0;
     				//draw upper sand
     				path.moveTo(CLOCKEND.x, CLOCKBASE.y);
     				path.lineTo((float)(CLOCKEND.x-BIAS.x*Math.sqrt((maxt-tt)/CAPACITY)),(float)(CLOCKBASE.y-BIAS.y*Math.sqrt((maxt-tt)/CAPACITY)));
@@ -210,22 +203,22 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     				path.lineTo(CLOCKEND.x, CLOCKEND.y);
     				c.drawPath(path,p);
     				path.reset();
-    				}else{
-    				//landscape_reverse
-        				//draw upper sand
-        				path.moveTo(CLOCKBASE.x, CLOCKBASE.y);
-        				path.lineTo((float)(CLOCKBASE.x+BIAS.x*Math.sqrt((maxt-tt)/CAPACITY)),(float)(CLOCKBASE.y-BIAS.y*Math.sqrt((maxt-tt)/CAPACITY)));
-        				path.lineTo((float)(CLOCKBASE.x+BIAS.x*Math.sqrt((maxt-tt)/CAPACITY)),CLOCKBASE.y);
-        				path.lineTo(CLOCKBASE.x, CLOCKBASE.y);
-        				c.drawPath(path,p);
-        				path.reset();
-        				//draw lower sand
-        				path.moveTo(CLOCKBASE.x, CLOCKEND.y);
-        				path.lineTo((float)(CLOCKBASE.x+BIAS.x*Math.sqrt(tt/CAPACITY)),(float)(CLOCKEND.y+BIAS.y*Math.sqrt(tt/CAPACITY)));
-        				path.lineTo((float)(CLOCKBASE.x+BIAS.x*Math.sqrt(tt/CAPACITY)),CLOCKEND.y);
-        				path.lineTo(CLOCKBASE.x, CLOCKEND.y);
-        				c.drawPath(path,p);
-        				path.reset();
+				}else{
+				//landscape_reverse
+    				//draw upper sand
+    				path.moveTo(CLOCKBASE.x, CLOCKBASE.y);
+    				path.lineTo((float)(CLOCKBASE.x+BIAS.x*Math.sqrt((maxt-tt)/CAPACITY)),(float)(CLOCKBASE.y-BIAS.y*Math.sqrt((maxt-tt)/CAPACITY)));
+    				path.lineTo((float)(CLOCKBASE.x+BIAS.x*Math.sqrt((maxt-tt)/CAPACITY)),CLOCKBASE.y);
+    				path.lineTo(CLOCKBASE.x, CLOCKBASE.y);
+    				c.drawPath(path,p);
+    				path.reset();
+    				//draw lower sand
+    				path.moveTo(CLOCKBASE.x, CLOCKEND.y);
+    				path.lineTo((float)(CLOCKBASE.x+BIAS.x*Math.sqrt(tt/CAPACITY)),(float)(CLOCKEND.y+BIAS.y*Math.sqrt(tt/CAPACITY)));
+    				path.lineTo((float)(CLOCKBASE.x+BIAS.x*Math.sqrt(tt/CAPACITY)),CLOCKEND.y);
+    				path.lineTo(CLOCKBASE.x, CLOCKEND.y);
+    				c.drawPath(path,p);
+    				path.reset();
     			}
     		}
     		
@@ -255,6 +248,7 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     }
     
 	public boolean onCreateOptionsMenu(Menu menu){
+		//create menu
 		boolean ret = super.onCreateOptionsMenu(menu);
 		menu.add(0, Menu.FIRST, Menu.NONE, "2minutes");
 		menu.add(0, Menu.FIRST+1, Menu.NONE, "3minutes");
