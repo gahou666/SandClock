@@ -5,13 +5,10 @@ import java.util.concurrent.TimeUnit;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.PointF;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -21,7 +18,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
@@ -37,7 +33,6 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     /** Called when the activity is first created. */
 	private final String TAG = this.getClass().getSimpleName();
 	private SensorManager mSensorManager;
-	private Screen mTextView;
 	double gravx, gravy;
 	Point CLOCKBASE = new Point(3,23);
 	Point CLOCKEND = new Point(577,895);
@@ -49,6 +44,7 @@ public class SandClockActivity extends Activity implements SensorEventListener{
 	double maxt = 9000;	//50 per second , 3000 per minute
 	double Uamount = Math.sqrt(0.3);
 	double Lamount = 1-Math.sqrt(0.7);
+	double BORDERg = 6.5;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -105,16 +101,7 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		p.setARGB(255, 255, 255, 255);
     		p.setStyle(Paint.Style.STROKE);
     		c.drawText("testString"+String.valueOf(tt), CLOCKCENTER.x+50, CLOCKCENTER.y, p);
-    		
-    		//orientation is fixed.
-    		/*
-    		Resources res = getResources();
-    		Configuration cfg = res.getConfiguration();
-    		if(cfg.orientation == Configuration.ORIENTATION_PORTRAIT){
-    			if(gravx<0) tt+=1.0;
-    			else tt-=1.0;
-    		}
-    		*/
+    		//todo : stop the timer when Android is LANDSCAPE.
     		tt-=(gravx/GRAVITY);
     		
     		p.setStrokeWidth(3);
@@ -143,11 +130,6 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		float rate2 = (float)(Math.sqrt(1-(float)((maxt-tt)/maxt))*Uamount);
     		float drate2 = (float)((1-Math.sqrt(1-(float)((maxt-tt)/maxt)))*Lamount);
     		Point BIAS = new Point(CLOCKEND.x-CLOCKCENTER.x-EXIT_WIDTH, CLOCKBASE.y-CLOCKCENTER.y);
-    		/*
-    		Log.i(TAG, "t    : "+String.valueOf(tt));
-    		Log.i(TAG, "maxt : "+String.valueOf(maxt));
-    		Log.i(TAG, "rate : "+String.valueOf(rate));
-    		*/
     		//portrait
     		if(gravx<0){
         		if(maxt>tt){
@@ -184,7 +166,7 @@ public class SandClockActivity extends Activity implements SensorEventListener{
             		path.reset();
         		}
         		//portrait_reverse
-    		}else{
+    		}else if(gravx>0){
         		if(0<tt){
         			//draw falling sand
         			p.setStrokeWidth(EXIT_WIDTH);
@@ -218,15 +200,16 @@ public class SandClockActivity extends Activity implements SensorEventListener{
             		c.drawPath(path,p);    			
             		path.reset();
         		}
+        		//landscape or landscape_reverse
+    		}else{
+    			
     		}
     		//Timer
     		try {
     			TimeUnit.MILLISECONDS.sleep(10);
     		} catch (InterruptedException e) {
-    			// TODO Auto-generated catch block
     			e.printStackTrace();
     		}
-    				
     		invalidate();
     	}
     }
@@ -240,6 +223,7 @@ public class SandClockActivity extends Activity implements SensorEventListener{
 	}
 	
 	public boolean onOptionsItemSelected(MenuItem item){
+		//change time what you want to calculate
 		switch(item.getItemId()){
 		case Menu.FIRST:
 			tt = 0;
