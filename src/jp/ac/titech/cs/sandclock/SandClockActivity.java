@@ -41,6 +41,8 @@ public class SandClockActivity extends Activity implements SensorEventListener{
 	Point CLOCKEND = new Point(577,895);
 	int EXIT_WIDTH = 3;
 	Point CLOCKCENTER = new Point((CLOCKBASE.x+CLOCKEND.x)/2,(CLOCKBASE.y+CLOCKEND.y)/2);
+	final double GRAVITY = 9.80619920;
+	double maxt = 9000;	//50 per second , 3000 per minute
 
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -49,12 +51,6 @@ public class SandClockActivity extends Activity implements SensorEventListener{
         l.setOrientation(LinearLayout.VERTICAL);
         setContentView(l);
         l.addView(new Screen(this));
-        /*
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        
-        setContentView(new ImageResizeView(this, R.drawable.t1));
-        */
 		FrameLayout fl = new FrameLayout(this);
 		setContentView(fl);
         fl.addView(new Screen(this));
@@ -84,8 +80,8 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		gravx = (double)(event.values[0]);
     		gravy = (double)(event.values[1]);
     		
-    		//Log.i(TAG, "x"+String.valueOf(gravx));
-    		//Log.i(TAG, "y"+String.valueOf(gravy));
+    		Log.i(TAG, "x"+String.valueOf(gravx));
+    		Log.i(TAG, "y"+String.valueOf(gravy));
     		
     	}
     }
@@ -103,15 +99,18 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		//draw glass
     		p.setARGB(255, 255, 255, 255);
     		p.setStyle(Paint.Style.STROKE);
-    		c.drawText("testString"+String.valueOf(tt), 100, 150, p);
+    		c.drawText("testString"+String.valueOf(tt), CLOCKCENTER.x+50, CLOCKCENTER.y, p);
     		
-    		//orientation
+    		//orientation is fixed.
+    		/*
     		Resources res = getResources();
     		Configuration cfg = res.getConfiguration();
     		if(cfg.orientation == Configuration.ORIENTATION_PORTRAIT){
     			if(gravx<0) tt+=1.0;
     			else tt-=1.0;
     		}
+    		*/
+    		tt-=(gravx/GRAVITY);
     		
     		p.setStrokeWidth(3);
     		Path path = new Path();
@@ -124,11 +123,12 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		path.lineTo(CLOCKCENTER.x-EXIT_WIDTH, CLOCKCENTER.y);
     		path.lineTo(CLOCKBASE.x, CLOCKBASE.y);
     		c.drawPath(path, p);
+    		path.reset();
     		
     		//draw sand
+    		p.setStrokeWidth(1);
     		p.setColor(Color.YELLOW);
     		p.setStyle(Paint.Style.FILL_AND_STROKE);
-    		double maxt = 120;
     		
     		if(tt<0) tt=0;
     		if(tt>maxt) tt=maxt;
@@ -138,9 +138,12 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		float rate2 = (float)(Math.sqrt(1-(float)((maxt-tt)/maxt))*0.7);
     		float drate2 = (float)((1-Math.sqrt(1-(float)((maxt-tt)/maxt)))*0.3);
     		Point BIAS = new Point(CLOCKEND.x-CLOCKCENTER.x-EXIT_WIDTH, CLOCKBASE.y-CLOCKCENTER.y);
+    		/*
     		Log.i(TAG, "t    : "+String.valueOf(tt));
     		Log.i(TAG, "maxt : "+String.valueOf(maxt));
     		Log.i(TAG, "rate : "+String.valueOf(rate));
+    		*/
+    		//portrait
     		if(gravx<0){
         		if(maxt>tt){
             		//draw upper sand
@@ -150,7 +153,7 @@ public class SandClockActivity extends Activity implements SensorEventListener{
             		path.lineTo(CLOCKCENTER.x-EXIT_WIDTH-BIAS.x*rate, CLOCKCENTER.y+BIAS.y*rate);
             		path.lineTo(CLOCKCENTER.x-EXIT_WIDTH, CLOCKCENTER.y);
             		c.drawPath(path,p);
-            		
+            		path.reset();
             		//draw lower sand
             		path.reset();
             		path.moveTo(CLOCKBASE.x, CLOCKEND.y);
@@ -158,6 +161,7 @@ public class SandClockActivity extends Activity implements SensorEventListener{
             		path.lineTo(CLOCKEND.x-BIAS.x*drate, CLOCKEND.y+BIAS.y*drate);
             		path.lineTo(CLOCKEND.x, CLOCKEND.y);
             		c.drawPath(path,p);
+            		path.reset();
         		}else{
         			//draw lower sand only
             		path.reset();
@@ -166,7 +170,9 @@ public class SandClockActivity extends Activity implements SensorEventListener{
             		path.lineTo((float)(CLOCKEND.x-BIAS.x*0.3), (float)(CLOCKEND.y+BIAS.y*0.3));
             		path.lineTo(CLOCKEND.x, CLOCKEND.y);
             		c.drawPath(path,p);    			
+            		path.reset();
         		}
+        		//portrait_reverse
     		}else{
         		if(0<tt){
             		//draw upper sand
@@ -176,7 +182,7 @@ public class SandClockActivity extends Activity implements SensorEventListener{
             		path.lineTo(CLOCKCENTER.x-EXIT_WIDTH+BIAS.x*rate2, CLOCKCENTER.y-BIAS.y*rate2);
             		path.lineTo(CLOCKCENTER.x-EXIT_WIDTH, CLOCKCENTER.y);
             		c.drawPath(path,p);
-            		
+            		path.reset();
             		//draw lower sand
             		path.reset();
             		path.moveTo(CLOCKEND.x, CLOCKBASE.y);
@@ -184,6 +190,7 @@ public class SandClockActivity extends Activity implements SensorEventListener{
             		path.lineTo(CLOCKBASE.x+BIAS.x*drate2, CLOCKBASE.y-BIAS.y*drate2);
             		path.lineTo(CLOCKBASE.x, CLOCKBASE.y);
             		c.drawPath(path,p);
+            		path.reset();
         		}else{
         			//draw lower sand only
             		path.reset();
@@ -192,13 +199,12 @@ public class SandClockActivity extends Activity implements SensorEventListener{
             		path.lineTo((float)(CLOCKBASE.x+BIAS.x*0.3), (float)(CLOCKBASE.y-BIAS.y*0.3));
             		path.lineTo(CLOCKBASE.x, CLOCKBASE.y);
             		c.drawPath(path,p);    			
+            		path.reset();
         		}
     		}
-    		path.reset();
-
     		//Timer
     		try {
-    			TimeUnit.MILLISECONDS.sleep(100);
+    			TimeUnit.MILLISECONDS.sleep(10);
     		} catch (InterruptedException e) {
     			// TODO Auto-generated catch block
     			e.printStackTrace();
