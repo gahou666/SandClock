@@ -44,9 +44,12 @@ public class SandClockActivity extends Activity implements SensorEventListener{
 	int EXIT_WIDTH = 3;
 	Point CLOCKCENTER = new Point((CLOCKBASE.x+CLOCKEND.x)/2,(CLOCKBASE.y+CLOCKEND.y)/2);
 	final double GRAVITY = 9.80619920;
-	double tt=0;
+	//default is 3 minutes
+	double tt = 0;
 	double maxt = 9000;	//50 per second , 3000 per minute
-
+	double Uamount = Math.sqrt(0.3);
+	double Lamount = 1-Math.sqrt(0.7);
+	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -135,10 +138,10 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		if(tt<0) tt=0;
     		if(tt>maxt) tt=maxt;
     		
-    		float rate = (float)(Math.sqrt(1-(float)(tt/maxt))*0.7);
-    		float drate = (float)((1-Math.sqrt(1-(float)(tt/maxt)))*0.3);
-    		float rate2 = (float)(Math.sqrt(1-(float)((maxt-tt)/maxt))*0.7);
-    		float drate2 = (float)((1-Math.sqrt(1-(float)((maxt-tt)/maxt)))*0.3);
+    		float rate = (float)(Math.sqrt(1-(float)(tt/maxt))*Uamount);
+    		float drate = (float)((1-Math.sqrt(1-(float)(tt/maxt)))*Lamount);
+    		float rate2 = (float)(Math.sqrt(1-(float)((maxt-tt)/maxt))*Uamount);
+    		float drate2 = (float)((1-Math.sqrt(1-(float)((maxt-tt)/maxt)))*Lamount);
     		Point BIAS = new Point(CLOCKEND.x-CLOCKCENTER.x-EXIT_WIDTH, CLOCKBASE.y-CLOCKCENTER.y);
     		/*
     		Log.i(TAG, "t    : "+String.valueOf(tt));
@@ -229,14 +232,20 @@ public class SandClockActivity extends Activity implements SensorEventListener{
 		case Menu.FIRST:
 			tt = 0;
 			maxt = 6000;
+			Uamount = Math.sqrt(0.2);
+			Lamount = 1-Math.sqrt(0.8);
 			break;
 		case Menu.FIRST+1:
 			tt = 0;
 			maxt = 9000;
+			Uamount = Math.sqrt(0.3);
+			Lamount = 1-Math.sqrt(0.7);
 			break;
 		case Menu.FIRST+2:
 			tt = 0;
 			maxt = 15000;
+			Uamount = Math.sqrt(0.5);
+			Lamount = 1-Math.sqrt(0.5);
 			break;
 		default:
 			break;
