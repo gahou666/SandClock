@@ -14,12 +14,10 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 
 public class SandClockActivity extends Activity implements SensorEventListener{
 	static class Point{
@@ -31,7 +29,6 @@ public class SandClockActivity extends Activity implements SensorEventListener{
 		}
 	}
 	
-	private final String TAG = this.getClass().getSimpleName();
 	private SensorManager mSensorManager;
 	double gravx, gravy;
 	//might be able to get from hardware information...
