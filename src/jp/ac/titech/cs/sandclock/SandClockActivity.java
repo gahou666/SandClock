@@ -18,6 +18,8 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -42,6 +44,7 @@ public class SandClockActivity extends Activity implements SensorEventListener{
 	int EXIT_WIDTH = 3;
 	Point CLOCKCENTER = new Point((CLOCKBASE.x+CLOCKEND.x)/2,(CLOCKBASE.y+CLOCKEND.y)/2);
 	final double GRAVITY = 9.80619920;
+	double tt=0;
 	double maxt = 9000;	//50 per second , 3000 per minute
 
 	@Override
@@ -87,7 +90,6 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     }
     
     public class Screen extends View {
-    	double tt=0;
     	public Screen(Context context){
     		super(context);
     	}
@@ -211,8 +213,34 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		}
     				
     		invalidate();
-    		
-    		//How do i get the current orientation - stack overflow
     	}
     }
+    
+	public boolean onCreateOptionsMenu(Menu menu){
+		boolean ret = super.onCreateOptionsMenu(menu);
+		menu.add(0, Menu.FIRST, Menu.NONE, "2minutes");
+		menu.add(0, Menu.FIRST+1, Menu.NONE, "3minutes");
+		menu.add(0, Menu.FIRST+2, Menu.NONE, "5minutes");
+		return ret;
+	}
+	
+	public boolean onOptionsItemSelected(MenuItem item){
+		switch(item.getItemId()){
+		case Menu.FIRST:
+			tt = 0;
+			maxt = 6000;
+			break;
+		case Menu.FIRST+1:
+			tt = 0;
+			maxt = 9000;
+			break;
+		case Menu.FIRST+2:
+			tt = 0;
+			maxt = 15000;
+			break;
+		default:
+			break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
 }
