@@ -42,9 +42,11 @@ public class SandClockActivity extends Activity implements SensorEventListener{
 	//default is 3 minutes
 	double tt = 0;
 	double maxt = 9000;	//50 per second , 3000 per minute
+	final double CAPACITY = 15000;
 	double Uamount = Math.sqrt(0.3);
 	double Lamount = 1-Math.sqrt(0.7);
 	double BORDERg = 6.5;
+	int fallsand = 0;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -100,9 +102,8 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		//draw glass
     		p.setARGB(255, 255, 255, 255);
     		p.setStyle(Paint.Style.STROKE);
-    		c.drawText("testString"+String.valueOf(tt), CLOCKCENTER.x+50, CLOCKCENTER.y, p);
-    		//todo : stop the timer when Android is LANDSCAPE.
-    		tt-=(gravx/GRAVITY);
+    		c.drawText("testString"+String.valueOf(fallsand), CLOCKCENTER.x+50, CLOCKCENTER.y, p);
+    		if(gravx<-BORDERg || gravx>BORDERg)	tt-=(gravx/GRAVITY);
     		
     		p.setStrokeWidth(3);
     		Path path = new Path();
@@ -131,14 +132,9 @@ public class SandClockActivity extends Activity implements SensorEventListener{
     		float drate2 = (float)((1-Math.sqrt(1-(float)((maxt-tt)/maxt)))*Lamount);
     		Point BIAS = new Point(CLOCKEND.x-CLOCKCENTER.x-EXIT_WIDTH, CLOCKBASE.y-CLOCKCENTER.y);
     		//portrait
-    		if(gravx<0){
+    		if(gravx<-BORDERg){
         		if(maxt>tt){
-        			//draw falling sand
-        			p.setStrokeWidth(EXIT_WIDTH);
-        			path.moveTo(CLOCKCENTER.x, CLOCKCENTER.y);
-        			path.lineTo(CLOCKCENTER.x, CLOCKEND.y);
-        			c.drawPath(path,p);
-        			path.reset();
+        			fallsand = 2;
             		//draw upper sand
         			p.setStrokeWidth(1);
             		path.moveTo(CLOCKCENTER.x+EXIT_WIDTH, CLOCKCENTER.y);
@@ -156,6 +152,7 @@ public class SandClockActivity extends Activity implements SensorEventListener{
             		c.drawPath(path,p);
             		path.reset();
         		}else{
+        			if(fallsand > 0) fallsand--;
         			//draw lower sand only
             		path.reset();
             		path.moveTo(CLOCKBASE.x, CLOCKEND.y);
@@ -166,14 +163,9 @@ public class SandClockActivity extends Activity implements SensorEventListener{
             		path.reset();
         		}
         		//portrait_reverse
-    		}else if(gravx>0){
+    		}else if(gravx>BORDERg){
         		if(0<tt){
-        			//draw falling sand
-        			p.setStrokeWidth(EXIT_WIDTH);
-        			path.moveTo(CLOCKCENTER.x, CLOCKCENTER.y);
-        			path.lineTo(CLOCKCENTER.x, CLOCKBASE.y);
-        			c.drawPath(path,p);
-        			path.reset();
+        			fallsand = -2;
             		//draw upper sand
         			p.setStrokeWidth(1);
             		path.moveTo(CLOCKCENTER.x+EXIT_WIDTH, CLOCKCENTER.y);
@@ -183,7 +175,6 @@ public class SandClockActivity extends Activity implements SensorEventListener{
             		c.drawPath(path,p);
             		path.reset();
             		//draw lower sand
-            		path.reset();
             		path.moveTo(CLOCKEND.x, CLOCKBASE.y);
             		path.lineTo(CLOCKEND.x-BIAS.x*drate2, CLOCKBASE.y-BIAS.y*drate2);
             		path.lineTo(CLOCKBASE.x+BIAS.x*drate2, CLOCKBASE.y-BIAS.y*drate2);
@@ -192,7 +183,7 @@ public class SandClockActivity extends Activity implements SensorEventListener{
             		path.reset();
         		}else{
         			//draw lower sand only
-            		path.reset();
+        			if(fallsand < 0) fallsand++;
             		path.moveTo(CLOCKEND.x, CLOCKBASE.y);
             		path.lineTo((float)(CLOCKEND.x-BIAS.x*Lamount), (float)(CLOCKBASE.y-BIAS.y*Lamount));
             		path.lineTo((float)(CLOCKBASE.x+BIAS.x*Lamount), (float)(CLOCKBASE.y-BIAS.y*Lamount));
@@ -202,8 +193,57 @@ public class SandClockActivity extends Activity implements SensorEventListener{
         		}
         		//landscape or landscape_reverse
     		}else{
-    			
+    			//landscape
+    			if(gravy<0){
+    				fallsand = 0;
+    				//draw upper sand
+    				path.moveTo(CLOCKEND.x, CLOCKBASE.y);
+    				path.lineTo((float)(CLOCKEND.x-BIAS.x*Math.sqrt((maxt-tt)/CAPACITY)),(float)(CLOCKBASE.y-BIAS.y*Math.sqrt((maxt-tt)/CAPACITY)));
+    				path.lineTo((float)(CLOCKEND.x-BIAS.x*Math.sqrt((maxt-tt)/CAPACITY)),CLOCKBASE.y);
+    				path.lineTo(CLOCKEND.x, CLOCKBASE.y);
+    				c.drawPath(path,p);
+    				path.reset();
+    				//draw lower sand
+    				path.moveTo(CLOCKEND.x, CLOCKEND.y);
+    				path.lineTo((float)(CLOCKEND.x-BIAS.x*Math.sqrt(tt/CAPACITY)),(float)(CLOCKEND.y+BIAS.y*Math.sqrt(tt/CAPACITY)));
+    				path.lineTo((float)(CLOCKEND.x-BIAS.x*Math.sqrt(tt/CAPACITY)),CLOCKEND.y);
+    				path.lineTo(CLOCKEND.x, CLOCKEND.y);
+    				c.drawPath(path,p);
+    				path.reset();
+    				}else{
+    				//landscape_reverse
+        				//draw upper sand
+        				path.moveTo(CLOCKBASE.x, CLOCKBASE.y);
+        				path.lineTo((float)(CLOCKBASE.x+BIAS.x*Math.sqrt((maxt-tt)/CAPACITY)),(float)(CLOCKBASE.y-BIAS.y*Math.sqrt((maxt-tt)/CAPACITY)));
+        				path.lineTo((float)(CLOCKBASE.x+BIAS.x*Math.sqrt((maxt-tt)/CAPACITY)),CLOCKBASE.y);
+        				path.lineTo(CLOCKBASE.x, CLOCKBASE.y);
+        				c.drawPath(path,p);
+        				path.reset();
+        				//draw lower sand
+        				path.moveTo(CLOCKBASE.x, CLOCKEND.y);
+        				path.lineTo((float)(CLOCKBASE.x+BIAS.x*Math.sqrt(tt/CAPACITY)),(float)(CLOCKEND.y+BIAS.y*Math.sqrt(tt/CAPACITY)));
+        				path.lineTo((float)(CLOCKBASE.x+BIAS.x*Math.sqrt(tt/CAPACITY)),CLOCKEND.y);
+        				path.lineTo(CLOCKBASE.x, CLOCKEND.y);
+        				c.drawPath(path,p);
+        				path.reset();
+    			}
     		}
+    		
+    		//draw falling sand
+			p.setStrokeWidth(EXIT_WIDTH);
+			if(fallsand>0){
+				path.moveTo(CLOCKCENTER.x, CLOCKEND.y);
+				if(fallsand == 2) path.lineTo(CLOCKCENTER.x, CLOCKCENTER.y);
+				else path.lineTo(CLOCKCENTER.x, (CLOCKCENTER.y*2+CLOCKEND.y)/3);
+			}
+			else if(fallsand<0){
+				path.moveTo(CLOCKCENTER.x, CLOCKBASE.y);
+				if(fallsand == -2) path.lineTo(CLOCKCENTER.x, CLOCKCENTER.y);
+				else path.lineTo(CLOCKCENTER.x, (CLOCKCENTER.y*2+CLOCKBASE.y)/3);
+			}
+			if(fallsand!=0) c.drawPath(path,p);
+			path.reset();
+    		
     		//Timer
     		try {
     			TimeUnit.MILLISECONDS.sleep(10);
